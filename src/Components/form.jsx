@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import '../Components/form.css';
 import fire from './fire';
-import firebase from 'firebase';
 
 export default function Form() {
 
@@ -13,8 +12,20 @@ export default function Form() {
         contact_num: 0
     });
     const [submitted, setSubmit] = useState(false);
+    const [DetailsObj, setDetailsObj] = useState({});
     const [valid, setValid] = useState(false);
-    
+
+    useEffect(() => {
+        fire.database().ref('Details').on('value', snapshot => {
+            if (snapshot.val() != null) {
+                setDetailsObj({ ...snapshot.val() });
+
+            }
+
+
+        })
+    });
+
     const handlefname = (data) => {
         setdetails({ ...details, fname: data.target.value });
     }
@@ -30,19 +41,19 @@ export default function Form() {
     const handleaddr = (data) => {
         setdetails({ ...details, address: data.target.value });
     }
-    const refresh=()=>{
+    const refresh = () => {
         window.location.reload();
     }
     const handlesubmitted = (data) => {
         data.preventDefault();
         if (details.fname && details.lname && details.contact_num && details.address) {
-            let messageRef= fire.database().ref('Details').orderByKey().limitToFirst;
+            let messageRef = fire.database().ref('Details').orderByKey().limitToFirst;
             fire.database().ref('Details').push(details);
             setValid(true);
         }
         setSubmit(true);
-        setTimeout(refresh,3000);
-        
+        setTimeout(refresh, 3000);
+
     }
 
     return (
@@ -88,6 +99,32 @@ export default function Form() {
             </div>
             <div className="Form" style={{ width: '30%', margin: '0 auto', position: 'relative', bottom: 70 }}>
                 <input style={{ width: '90%' }} className="btn btn-primary" type="submit" value="Submit" onClick={handlesubmitted} />
+            </div>
+
+            <div>
+                <table>
+                    <thead>
+                        <th style={{padding:45}}>First Name</th>
+                        <th style={{padding:45}}>Last Name</th>
+                        <th style={{padding:45}}>Contact</th>
+                        <th style={{padding:45}}>Address</th>
+                    </thead>
+                </table>
+                <tbody>
+                {
+                    Object.keys(DetailsObj).map(id => {
+                        return <tr >
+                       <td style={{paddingLeft:45}}> {DetailsObj[id].fname}</td>
+                       <td style={{paddingLeft:45}}> {DetailsObj[id].lname}</td>
+                       <td style={{paddingLeft:45}}> {DetailsObj[id].contact_num}</td>
+                       <td style={{paddingLeft:45}}> {DetailsObj[id].address}</td>
+                       
+                        </tr>
+                    })
+                
+                }
+                
+                </tbody>
             </div>
         </div>
     )
